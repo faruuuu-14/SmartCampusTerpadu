@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
     // ==========================================
     public function run(): void
     {
-        // Seeder data demo akan dipanggil dari sini
+        $this->call([
+            DataDemoSeeder::class,
+        ]);
     }
 }
