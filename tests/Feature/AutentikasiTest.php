@@ -19,7 +19,7 @@ class AutentikasiTest extends TestCase
 
         $responseLogin = $this->get('/login');
         $responseLogin->assertStatus(200);
-        $responseLogin->assertSee('Satu Pintu Masuk');
+        $responseLogin->assertSeeText('Satu pintu untuk kegiatan kampus.');
     }
 
     // ==========================================
@@ -68,7 +68,7 @@ class AutentikasiTest extends TestCase
 
         $responsePilih = $this->get(route('autentikasi.pilihperan'));
         $responsePilih->assertStatus(200);
-        $responsePilih->assertSee('Pilih Peran Masuk');
+        $responsePilih->assertSeeText('Pilih portal kerja');
         $responsePilih->assertSee('PIMPINAN');
         $responsePilih->assertSee('DOSEN');
 

@@ -1,20 +1,41 @@
 <!-- ========================================== -->
-<!-- PEMBAHASAN / BAGIAN: Header Merek dan Identitas Portal -->
+<!-- PEMBAHASAN / BAGIAN: Bilah Atas Portal dan Profil Pengguna -->
 <!-- ========================================== -->
-<header class="bg-white border-bottom">
-    <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <a class="d-flex align-items-center gap-2 text-decoration-none text-dark fw-bold" href="{{ route('login') }}">
-            <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary text-white fw-bold" style="width: 2.5rem; height: 2.5rem;">SC</span>
-            <span>Smart Campus Terpadu</span>
-        </a>
-
+<header class="portal-header">
+    <div class="d-flex align-items-center gap-2">
         @auth
-            <div class="d-flex flex-wrap align-items-center gap-2">
-                <span class="text-secondary">{{ Auth::user()->NAMALENGKAP }}</span>
-                @if (session('PERANAKTIF'))
-                    <span class="lencana-peran">{{ session('PERANAKTIF') }}</span>
-                @endif
+            <!-- ========================================== -->
+            <!-- PEMBAHASAN / BAGIAN: Tombol Navigasi Seluler -->
+            <!-- ========================================== -->
+            <button class="btn btn-light border d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuSeluler" aria-controls="menuSeluler" aria-label="Buka navigasi">☰</button>
+        @endauth
+        <a class="merek-portal" href="{{ Auth::check() ? route(strtolower(session('PERANAKTIF', 'mahasiswa')).'.dasbor') : route('login') }}">
+            <span class="logo-portal" aria-hidden="true">SC</span>
+            <span>
+                <span class="d-block">Smart Campus</span>
+                <small class="d-block teks-bantu fw-normal">Portal Terpadu</small>
+            </span>
+        </a>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PEMBAHASAN / BAGIAN: Menu Identitas dan Aksi Akun -->
+    <!-- ========================================== -->
+    <div class="d-flex align-items-center gap-2 gap-md-3">
+        @auth
+            <div class="d-none d-sm-block text-end">
+                <div class="fw-bold">{{ Auth::user()->NAMALENGKAP }}</div>
+                <small class="teks-bantu">{{ session('PERANAKTIF') }}</small>
             </div>
+            @if (count(Auth::user()->daftarPeran()) > 1)
+                <a class="btn btn-light border btn-sm" href="{{ route('autentikasi.pilihperan') }}">Ganti peran</a>
+            @endif
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button class="btn btn-outline-secondary btn-sm" type="submit">Keluar</button>
+            </form>
+        @else
+            <span class="small teks-bantu d-none d-sm-inline">Portal Akademik &amp; Administrasi</span>
         @endauth
     </div>
 </header>

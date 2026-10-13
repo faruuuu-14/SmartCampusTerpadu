@@ -1,9 +1,9 @@
 <!-- ========================================== -->
 <!-- PEMBAHASAN / BAGIAN: Footer dan Skrip Dasar Bootstrap -->
 <!-- ========================================== -->
-<footer class="mt-auto border-top bg-white py-3">
-    <div class="container text-center small text-secondary">
-        &copy; {{ date('Y') }} Smart Campus Terpadu
+<footer class="portal-footer mt-auto">
+    <div>
+        &copy; {{ date('Y') }} Smart Campus Terpadu <span class="d-none d-sm-inline">&middot; Portal layanan akademik dan administrasi kampus</span>
     </div>
 </footer>
 

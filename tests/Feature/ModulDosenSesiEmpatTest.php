@@ -47,6 +47,18 @@ class ModulDosenSesiEmpatTest extends TestCase
             ->assertRedirect(route('dosen.tugas.indeks'));
 
         $tugas = Tugas::query()->where('JUDULTUGAS', 'Latihan Pengolahan Data')->firstOrFail();
+        $this->actingAs($penggunaDosen)
+            ->withSession(['PERANAKTIF' => 'DOSEN'])
+            ->put(route('dosen.tugas.ubah', $tugas), [
+                'IDJADWAL' => $jadwal->IDJADWAL,
+                'JUDULTUGAS' => 'Latihan Pengolahan Data Revisi',
+                'DESKRIPSI' => 'Kerjakan dan lampirkan hasil analisis.',
+                'TANGGALTENGGAT' => now()->addDays(4)->format('Y-m-d H:i:s'),
+                'MODEPENGERJAAN' => 'WAJIBKELAS',
+            ])
+            ->assertRedirect(route('dosen.tugas.indeks'));
+        $this->assertSame('Latihan Pengolahan Data Revisi', $tugas->fresh()->JUDULTUGAS);
+
         $mahasiswa = Mahasiswa::query()->firstOrFail();
         Storage::disk('local')->put('pengumpulan/latihan.pdf', 'isi berkas uji');
         $pengumpulan = Pengumpulan::query()->create([
@@ -76,5 +88,29 @@ class ModulDosenSesiEmpatTest extends TestCase
             ->withSession(['PERANAKTIF' => 'DOSEN'])
             ->post(route('dosen.tugas.nilai', $pengumpulan), ['NILAI' => 90])
             ->assertForbidden();
+    }
+
+    // ==========================================
+    // PEMBAHASAN / BAGIAN: Menghapus Tugas Dosen yang Belum Memiliki Pengumpulan
+    // ==========================================
+    public function test_dosen_dapat_menghapus_tugas_kosong_miliknya(): void
+    {
+        $this->seed(DataDemoSeeder::class);
+        $penggunaDosen = Pengguna::query()->where('USERNAME', 'DOSEN002')->firstOrFail();
+        $jadwal = $penggunaDosen->dosen->jadwal()->firstOrFail();
+        $tugas = $penggunaDosen->dosen->tugas()->create([
+            'IDJADWAL' => $jadwal->IDJADWAL,
+            'JUDULTUGAS' => 'Tugas untuk Dihapus',
+            'TANGGALTENGGAT' => now()->addDays(2),
+            'MODEPENGERJAAN' => 'BEBAS',
+            'DIBUATVIA' => 'WEB',
+        ]);
+
+        $this->actingAs($penggunaDosen)
+            ->withSession(['PERANAKTIF' => 'DOSEN'])
+            ->delete(route('dosen.tugas.hapus', $tugas))
+            ->assertRedirect(route('dosen.tugas.indeks'));
+
+        $this->assertDatabaseMissing('TUGAS', ['IDTUGAS' => $tugas->IDTUGAS]);
     }
 }

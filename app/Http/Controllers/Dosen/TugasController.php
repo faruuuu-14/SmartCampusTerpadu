@@ -8,6 +8,7 @@ use App\Http\Requests\Dosen\NilaiPengumpulanRequest;
 use App\Models\Dosen;
 use App\Models\Pengguna;
 use App\Models\Pengumpulan;
+use App\Models\Tugas;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -55,6 +56,35 @@ class TugasController extends Controller
         ]);
 
         return to_route('dosen.tugas.indeks')->with('status', 'Tugas berhasil dibuat.');
+    }
+
+    // ==========================================
+    // PEMBAHASAN / BAGIAN: Memperbarui Tugas Milik Dosen
+    // ==========================================
+    public function ubah(BuatTugasRequest $request, Tugas $tugas): RedirectResponse
+    {
+        $pengguna = $request->user();
+        abort_unless($pengguna instanceof Pengguna && $pengguna->dosen instanceof Dosen, 403);
+        abort_unless($tugas->IDDOSEN === $pengguna->dosen->IDDOSEN, 403);
+
+        $tugas->update($request->validated());
+
+        return to_route('dosen.tugas.indeks')->with('status', 'Tugas berhasil diperbarui.');
+    }
+
+    // ==========================================
+    // PEMBAHASAN / BAGIAN: Menghapus Tugas Kosong tanpa Menghapus Pengumpulan
+    // ==========================================
+    public function hapus(Tugas $tugas): RedirectResponse
+    {
+        $pengguna = auth()->user();
+        abort_unless($pengguna instanceof Pengguna && $pengguna->dosen instanceof Dosen, 403);
+        abort_unless($tugas->IDDOSEN === $pengguna->dosen->IDDOSEN, 403);
+        abort_if($tugas->pengumpulan()->exists(), 409, 'Tugas yang telah memiliki pengumpulan tidak dapat dihapus.');
+
+        $tugas->delete();
+
+        return to_route('dosen.tugas.indeks')->with('status', 'Tugas berhasil dihapus.');
     }
 
     // ==========================================

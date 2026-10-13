@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Autentikasi\AutentikasiController;
 use App\Http\Controllers\Baak\DasborController as BaakDasborController;
+use App\Http\Controllers\Baak\JadwalController as BaakJadwalController;
+use App\Http\Controllers\Baak\KrsController as BaakKrsController;
+use App\Http\Controllers\Baak\PenggunaController as BaakPenggunaController;
 use App\Http\Controllers\Baak\SuratController as BaakSuratController;
 use App\Http\Controllers\BotWhatsapp\BotWhatsappController;
 use App\Http\Controllers\BotWhatsapp\IkatAkunController;
@@ -13,6 +16,7 @@ use App\Http\Controllers\Mahasiswa\DasborController as MahasiswaDasborController
 use App\Http\Controllers\Mahasiswa\OrmawaDasborController;
 use App\Http\Controllers\Mahasiswa\PengajuanSuratController;
 use App\Http\Controllers\Mahasiswa\PresensiController;
+use App\Http\Controllers\Mahasiswa\TugasController as MahasiswaTugasController;
 use App\Http\Controllers\Pimpinan\DasborController as PimpinanDasborController;
 use App\Http\Controllers\Pimpinan\PersetujuanSuratController;
 use App\Http\Controllers\Publik\VerifikasiController;
@@ -60,6 +64,9 @@ Route::middleware(['auth', 'peran:MAHASISWA'])->prefix('mahasiswa')->name('mahas
     Route::get('/dasbor', [MahasiswaDasborController::class, 'indeks'])->name('dasbor');
     Route::get('/pengajuan-surat', [PengajuanSuratController::class, 'indeks'])->name('surat.indeks');
     Route::post('/pengajuan-surat', [PengajuanSuratController::class, 'simpan'])->name('surat.simpan');
+    Route::get('/tugas', [MahasiswaTugasController::class, 'indeks'])->name('tugas.indeks');
+    Route::post('/tugas/{tugas}/pengumpulan', [MahasiswaTugasController::class, 'simpan'])->name('tugas.simpan');
+    Route::delete('/tugas/{tugas}/pengumpulan', [MahasiswaTugasController::class, 'hapus'])->name('tugas.hapus');
 });
 
 // ==========================================
@@ -96,6 +103,8 @@ Route::middleware(['auth', 'peran:DOSEN'])->prefix('dosen')->name('dosen.')->gro
     Route::get('/presensi/{presensi}/foto', [RekapPresensiController::class, 'foto'])->name('rekap.foto');
     Route::get('/tugas', [TugasController::class, 'indeks'])->name('tugas.indeks');
     Route::post('/tugas', [TugasController::class, 'simpan'])->name('tugas.simpan');
+    Route::put('/tugas/{tugas}', [TugasController::class, 'ubah'])->name('tugas.ubah');
+    Route::delete('/tugas/{tugas}', [TugasController::class, 'hapus'])->name('tugas.hapus');
     Route::get('/pengumpulan/{pengumpulan}/unduh', [TugasController::class, 'unduh'])->name('tugas.unduh');
     Route::post('/pengumpulan/{pengumpulan}/nilai', [TugasController::class, 'nilai'])->name('tugas.nilai');
 });
@@ -115,6 +124,11 @@ Route::middleware(['auth', 'peran:PIMPINAN'])->prefix('pimpinan')->name('pimpina
 // ==========================================
 Route::middleware(['auth', 'peran:BAAK'])->prefix('baak')->name('baak.')->group(function () {
     Route::get('/dasbor', [BaakDasborController::class, 'indeks'])->name('dasbor');
+    Route::resource('/pengguna', BaakPenggunaController::class)->except(['show']);
+    Route::resource('/jadwal', BaakJadwalController::class)->except(['show']);
+    Route::resource('/krs', BaakKrsController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['krs' => 'krs']);
     Route::get('/surat', [BaakSuratController::class, 'indeks'])->name('surat.indeks');
     Route::get('/surat/{administrasi}/lampiran', [BaakSuratController::class, 'lampiran'])->name('surat.lampiran');
     Route::post('/surat/{administrasi}/tinjau', [BaakSuratController::class, 'tinjau'])->name('surat.tinjau');

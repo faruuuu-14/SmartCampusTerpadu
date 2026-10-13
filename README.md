@@ -31,6 +31,17 @@ npm run build
 
 > **Peringatan:** `migrate:fresh` menghapus seluruh tabel dan data pada basis data yang dikonfigurasi. Pastikan `DB_DATABASE` menunjuk ke basis data pengembangan yang memang boleh direset, bukan basis data produksi.
 
+### Impor basis data melalui phpMyAdmin
+
+Berkas [`database/SMARTCAMPUS.sql`](./database/SMARTCAMPUS.sql) berisi struktur tabel aplikasi serta catatan migrasi Laravel, **tanpa akun, data mahasiswa, atau data akademik**. SQL tersebut membuat basis data `SMARTCAMPUS` dan menghapus/membuat ulang tabel bernama sama; impor hanya ke basis data baru atau kosong.
+
+1. Buka phpMyAdmin, pilih **Import**, lalu unggah `database/SMARTCAMPUS.sql`. Alternatifnya, buat basis data bernama `SMARTCAMPUS` dengan kolasi `utf8mb4_unicode_ci`, pilih basis data tersebut, lalu impor berkas.
+2. Sesuaikan variabel `DB_*` di `.env` dengan host, port, nama basis data, dan akun MySQL Anda. Jangan masukkan `.env` ke Git.
+3. Isi akun demo dan jadwal dengan `php artisan db:seed`.
+4. Jalankan `php artisan route:list` dan `php artisan test` untuk memeriksa aplikasi.
+
+Untuk instalasi lokal yang belum mengimpor SQL, gunakan `php artisan migrate:fresh --seed` sebagai alternatif. Perintah itu menghapus seluruh tabel dalam basis data aktif.
+
 Jalankan aplikasi:
 
 ```powershell
@@ -66,7 +77,9 @@ WHATSAPP_VERIFY_TOKEN=
 WHATSAPP_APP_SECRET=
 ```
 
-Untuk WhatsApp Cloud API, atur `WHATSAPP_MODE=cloud`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, serta `WHATSAPP_APP_SECRET` dan `WHATSAPP_VERIFY_TOKEN`. Nilai rahasia hanya disimpan di `.env` dan tidak di-commit. URL API dan waktu tunggu dapat diatur lewat `WHATSAPP_API_BASE_URL`, `WHATSAPP_API_VERSION`, dan `WHATSAPP_API_TIMEOUT`.
+**Menguji mode log tidak memerlukan nomor khusus atau akun Meta.** Mode ini tidak mengirim pesan ke ponsel; ia mencatat balasan bot di `storage/logs/laravel.log`. Uji alur webhook dengan pengujian otomatis `php artisan test --compact tests/Feature/BotWhatsappFiturTest.php`.
+
+Untuk percakapan WhatsApp sungguhan, gunakan **nomor WhatsApp Business Platform** (nomor uji dari Meta untuk demo atau nomor bisnis khusus untuk produksi), aplikasi Meta, kredensial Cloud API, dan URL webhook HTTPS yang dapat diakses publik. Nomor penerima uji adalah ponsel yang akan mengirim pesan; untuk nomor uji Meta, penerima harus ditambahkan/diizinkan di aplikasi Meta dan mengikuti aturan opt-in. Tidak perlu membeli nomor penerima baru hanya untuk mencoba mode log. Atur `WHATSAPP_MODE=cloud`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, dan `WHATSAPP_VERIFY_TOKEN`. Nilai rahasia hanya disimpan di `.env` dan tidak di-commit. URL API dan waktu tunggu dapat diatur lewat `WHATSAPP_API_BASE_URL`, `WHATSAPP_API_VERSION`, dan `WHATSAPP_API_TIMEOUT`.
 
 Setelah login, buka **Ikat akun WhatsApp** atau `/whatsapp/ikat`, lalu kirim `BIND <KODE>` dari nomor yang akan dihubungkan. Kode sekali pakai berlaku 10 menit. Webhook Meta harus mengarah ke HTTPS `/webhook/whatsapp` dan menggunakan token verifikasi yang sama. Webhook POST memeriksa `X-Hub-Signature-256`, mengabaikan ID pesan yang telah diproses, serta membatasi pesan per nomor.
 
@@ -83,6 +96,16 @@ php artisan schedule:work
 
 `jadwal:pengingat` terdaftar untuk berjalan setiap menit. Mode `log` menulis pengingat ke log; mode `cloud` mengirimnya melalui WhatsApp Cloud API. Nomor yang belum terikat ditandai gagal dengan catatan agar dapat ditindaklanjuti.
 
+## Fitur Web per Peran
+
+- **Mahasiswa:** melihat profil, jadwal KRS dan ringkasan presensi; melihat tugas kelas, mengunggah/mengganti/menghapus pengumpulan sebelum dinilai; membuat dan memantau pengajuan surat milik sendiri. Data akademik resmi tidak dapat diubah dari akun mahasiswa.
+- **Dosen:** membuka/menutup pertemuan; melihat rekap dan meninjau presensi; mengelola tugas milik sendiri, mengunduh pengumpulan, serta memberi nilai dan umpan balik. Tugas yang sudah memiliki pengumpulan tidak bisa dihapus.
+- **BAAK:** CRUD akun/profil mahasiswa, dosen, pimpinan, dan staf; CRUD jadwal kuliah dan pendaftaran KRS; memeriksa lampiran dan memproses surat. Nonaktifkan akun untuk mempertahankan riwayat, dan perubahan jadwal/KRS yang sudah memiliki riwayat akademik ditolak.
+- **Pimpinan:** melihat surat sesuai urutan persetujuan, menyetujui dengan autentikasi ulang/TTE atau menolak dengan catatan.
+- **ORMAWA:** dashboard identitas organisasi; gunakan **Layanan Mahasiswa** untuk berpindah ke peran Mahasiswa dan memakai pengajuan surat pribadi. Modul proposal/LPJ Ormawa tersendiri belum tersedia.
+
+WhatsApp merupakan kanal penghubung untuk perintah cepat; pengelolaan data utama tetap dilakukan di portal web.
+
 ## Rute Utama
 
 | Metode | URL | Akses / fungsi |
@@ -93,12 +116,18 @@ php artisan schedule:work
 | POST | `/logout` | Keluar |
 | GET | `/mahasiswa/dasbor` | Dasbor mahasiswa |
 | GET, POST | `/mahasiswa/pengajuan-surat` | Riwayat dan pengajuan surat |
+| GET | `/mahasiswa/tugas` | Tugas dari kelas pada KRS mahasiswa |
+| POST, DELETE | `/mahasiswa/tugas/{tugas}/pengumpulan` | Buat/perbarui atau hapus pengumpulan sebelum dinilai |
 | GET | `/dosen/dasbor` | Dasbor dosen |
 | GET | `/dosen/pertemuan` | Sesi dan tautan presensi |
 | POST | `/dosen/pertemuan/{jadwal}/buka` | Membuka sesi presensi |
 | POST | `/dosen/pertemuan/{pertemuan}/tutup` | Menutup sesi presensi |
 | GET | `/dosen/rekap-presensi` | Rekap dan peninjauan presensi |
 | GET, POST | `/dosen/tugas` | Daftar dan pembuatan tugas |
+| PUT, DELETE | `/dosen/tugas/{tugas}` | Ubah tugas milik dosen atau hapus tugas tanpa pengumpulan |
+| GET, POST, PUT, DELETE | `/baak/pengguna` | CRUD akun dan profil; penghapusan berupa penonaktifan agar riwayat terjaga |
+| GET, POST, PUT, DELETE | `/baak/jadwal` | CRUD jadwal; perubahan/penghapusan ditolak bila sudah ada riwayat |
+| GET, POST, PUT, DELETE | `/baak/krs` | CRUD pendaftaran kelas mahasiswa; riwayat presensi/pengumpulan dilindungi |
 | GET | `/baak/surat` | Daftar surat untuk BAAK |
 | POST | `/baak/surat/{administrasi}/tinjau` | Menyetujui lanjut atau meminta revisi |
 | GET | `/pimpinan/surat` | Antrean persetujuan pimpinan |
