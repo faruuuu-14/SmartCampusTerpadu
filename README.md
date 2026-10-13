@@ -1,58 +1,79 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Smart Campus Terpadu
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Proyek Skripsi: **Sistem Web Portal Multi-Role Terpadu & WhatsApp Bot (FSM) dengan Tanda Tangan Elektronik (TTE) Kriptografi Ed25519 dan Presensi Cerdas Anti-Titip Absen.**
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🛠️ Lingkungan Pengembangan & Prasyarat
+- **Sistem Operasi**: Windows 11 / Laragon
+- **Framework**: Laravel 13.x (PHP 8.5)
+- **Basis Data**: MySQL 8.0 (`SMARTCAMPUS`, `utf8mb4_unicode_ci`)
+- **Ekstensi PHP Wajib**: `openssl`, `sodium`, `gd`, `mbstring`, `fileinfo`, `pdo_mysql`, `curl`, `intl`, `zip`
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🔑 Kredensial Akun Demo (Sesi 1)
+Semua akun demo menggunakan **satu kata sandi seragam**:
+> **Kata Sandi Seragam**: `SmartCampus2026!`
 
-## Learning Laravel
+| Peran | Username | Nama Lengkap | Keterangan Relasi Peran |
+|---|---|---|---|
+| **BAAK** | `BAAK001` | Staf Administrasi BAAK | `ADALAHBAAK = 1` |
+| **DOSEN & PIMPINAN** | `DOSEN001` | Prof. Dr. Ir. Budi Santoso, M.T. | Terdaftar di `DOSEN` & memiliki `JABATAN` (Dekan) &rarr; **Peran Ganda** |
+| **DOSEN** | `DOSEN002` | Dr. Ratna Sari, S.Kom., M.Kom. | Dosen Pengampu Biasa |
+| **DOSEN** | `DOSEN003` | Ahmad Fauzi, S.T., M.T. | Dosen Pengampu Biasa |
+| **MAHASISWA & ORMAWA** | `220101001` | Ahmad Maulana | Mahasiswa Informatika & `IDKETUA` BEM aktif &rarr; **Peran Ganda** |
+| **MAHASISWA** | `220101002` | Siti Nurhaliza | Mahasiswa Informatika 2022 |
+| **MAHASISWA** | `220101003` | Rian Pratama | Mahasiswa Informatika 2022 |
+| **MAHASISWA** | `230201004` | Dewi Lestari | Mahasiswa Sistem Informasi 2023 |
+| **MAHASISWA** | `230201005` | Fajar Nugraha | Mahasiswa Sistem Informasi 2023 |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🏛️ Arsitektur "Login Satu Pintu" & Multi-Role Dinamis
+1. **Tanpa Kolom Peran Statis**: Tabel `PENGGUNA` sama sekali tidak memiliki kolom `ROLE`.
+2. **Penurunan Relasi Otomatis (`daftarPeran()`)**:
+   - Jika ada entri di tabel `MAHASISWA` &rarr; Berperan `MAHASISWA`.
+   - Jika menjadi `IDKETUA` di tabel `ORGANISASI` (status `AKTIF`) &rarr; Otomatis berperan `ORMAWA`.
+   - Jika ada entri di tabel `DOSEN` &rarr; Berperan `DOSEN`.
+   - Jika pada entri `DOSEN` terisi kolom `JABATAN` &rarr; Otomatis berperan `PIMPINAN`.
+   - Jika kolom `ADALAHBAAK = 1` &rarr; Berperan `BAAK`.
+3. **Alur Masuk Akun**:
+   - Jika akun hanya memiliki **1 peran**: Langsung diarahkan ke dasbor peran tersebut.
+   - Jika akun memiliki **> 1 peran**: Diarahkan ke halaman `/pilih-peran` untuk menentukan konteks kerja aktif. Sesi server menyimpan `PERANAKTIF`.
+   - Pengguna dengan peran ganda dapat berpindah konteks kapan saja melalui tombol **⇄ Ganti Peran** di navigasi atas.
+4. **Keamanan Server-Side**:
+   - Middleware `DeteksiPeran` (alias `peran:DOSEN,PIMPINAN`) memeriksa peran aktif langsung pada sesi server dan menolak akses ilegal dengan status **403 Forbidden**.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## 🗄️ Aturan Skema Basis Data `SMARTCAMPUS` (12 Tabel)
+Semua nama tabel dan kolom menggunakan **HURUF KAPITAL TANPA SPASI DAN TANPA GARIS BAWAH**:
+1. `PENGGUNA`
+2. `DOSEN`
+3. `MAHASISWA`
+4. `ORGANISASI`
+5. `JADWAL`
+6. `KRS`
+7. `PERTEMUAN`
+8. `PRESENSI`
+9. `TUGAS`
+10. `PENGUMPULAN`
+11. `ADMINISTRASI`
+12. `PERSETUJUANSURAT`
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Setiap entitas memiliki stempel waktu `TANGGALBUAT` dan `TANGGALUBAH`.
 
+---
+
+## 🚀 Perintah Dasar Pengujian
 ```bash
-composer require laravel/boost --dev
+# Migrasi ulang dan isi data demo
+php artisan migrate:fresh --seed
 
-php artisan boost:install
+# Menjalankan test suite
+php artisan test --compact
+
+# Pemeriksaan format kode
+vendor/bin/pint --format agent
 ```
-
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
