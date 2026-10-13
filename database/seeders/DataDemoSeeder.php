@@ -26,7 +26,7 @@ class DataDemoSeeder extends Seeder
         // ----------------------------------------------------
         // 1. Akun BAAK (Staf Administrasi)
         // ----------------------------------------------------
-        $penggunaBaak = Pengguna::create([
+        $penggunaBaak = Pengguna::updateOrCreate(['USERNAME' => 'BAAK001'], [
             'USERNAME' => 'BAAK001',
             'PASSWORD' => $kataSandiBersama,
             'NAMALENGKAP' => 'Staf Administrasi BAAK',
@@ -39,7 +39,7 @@ class DataDemoSeeder extends Seeder
         // ----------------------------------------------------
         // 2. Dosen Berjabatan (Pimpinan Merangkap Dosen)
         // ----------------------------------------------------
-        $penggunaPimpinan = Pengguna::create([
+        $penggunaPimpinan = Pengguna::updateOrCreate(['USERNAME' => 'DOSEN001'], [
             'USERNAME' => 'DOSEN001',
             'PASSWORD' => $kataSandiBersama,
             'NAMALENGKAP' => 'Prof. Dr. Ir. Budi Santoso, M.T.',
@@ -49,7 +49,7 @@ class DataDemoSeeder extends Seeder
             'STATUSAKUN' => 'AKTIF',
         ]);
 
-        $dosenPimpinan = Dosen::create([
+        $dosenPimpinan = Dosen::updateOrCreate(['NIDN' => '0011223301'], [
             'IDPENGGUNA' => $penggunaPimpinan->IDPENGGUNA,
             'NIDN' => '0011223301',
             'NIP' => '197501012000031001',
@@ -62,7 +62,7 @@ class DataDemoSeeder extends Seeder
         // ----------------------------------------------------
         // 3. Dosen Biasa 1
         // ----------------------------------------------------
-        $penggunaDosen2 = Pengguna::create([
+        $penggunaDosen2 = Pengguna::updateOrCreate(['USERNAME' => 'DOSEN002'], [
             'USERNAME' => 'DOSEN002',
             'PASSWORD' => $kataSandiBersama,
             'NAMALENGKAP' => 'Dr. Ratna Sari, S.Kom., M.Kom.',
@@ -72,7 +72,7 @@ class DataDemoSeeder extends Seeder
             'STATUSAKUN' => 'AKTIF',
         ]);
 
-        $dosen2 = Dosen::create([
+        $dosen2 = Dosen::updateOrCreate(['NIDN' => '0022334402'], [
             'IDPENGGUNA' => $penggunaDosen2->IDPENGGUNA,
             'NIDN' => '0022334402',
             'NIP' => '198205122008122002',
@@ -85,7 +85,7 @@ class DataDemoSeeder extends Seeder
         // ----------------------------------------------------
         // 4. Dosen Biasa 2
         // ----------------------------------------------------
-        $penggunaDosen3 = Pengguna::create([
+        $penggunaDosen3 = Pengguna::updateOrCreate(['USERNAME' => 'DOSEN003'], [
             'USERNAME' => 'DOSEN003',
             'PASSWORD' => $kataSandiBersama,
             'NAMALENGKAP' => 'Ahmad Fauzi, S.T., M.T.',
@@ -95,7 +95,7 @@ class DataDemoSeeder extends Seeder
             'STATUSAKUN' => 'AKTIF',
         ]);
 
-        $dosen3 = Dosen::create([
+        $dosen3 = Dosen::updateOrCreate(['NIDN' => '0033445503'], [
             'IDPENGGUNA' => $penggunaDosen3->IDPENGGUNA,
             'NIDN' => '0033445503',
             'NIP' => '198809202015041003',
@@ -108,7 +108,7 @@ class DataDemoSeeder extends Seeder
         // ----------------------------------------------------
         // 5. Mahasiswa 1 (Ketua BEM - Peran Ganda Mahasiswa + Ormawa)
         // ----------------------------------------------------
-        $penggunaMhs1 = Pengguna::create([
+        $penggunaMhs1 = Pengguna::updateOrCreate(['USERNAME' => '220101001'], [
             'USERNAME' => '220101001',
             'PASSWORD' => $kataSandiBersama,
             'NAMALENGKAP' => 'Ahmad Maulana',
@@ -118,7 +118,7 @@ class DataDemoSeeder extends Seeder
             'STATUSAKUN' => 'AKTIF',
         ]);
 
-        $mhs1 = Mahasiswa::create([
+        $mhs1 = Mahasiswa::updateOrCreate(['NIM' => '220101001'], [
             'IDPENGGUNA' => $penggunaMhs1->IDPENGGUNA,
             'NIM' => '220101001',
             'NAMAMAHASISWA' => 'Ahmad Maulana',
@@ -128,7 +128,7 @@ class DataDemoSeeder extends Seeder
         ]);
 
         // Organisasi BEM (Ketua: Mhs 1, Pembina: Dosen Pimpinan)
-        Organisasi::create([
+        Organisasi::updateOrCreate(['IDKETUA' => $mhs1->IDMAHASISWA], [
             'NAMAORGANISASI' => 'Badan Eksekutif Mahasiswa (BEM)',
             'JENISORGANISASI' => 'BEM',
             'IDKETUA' => $mhs1->IDMAHASISWA,
@@ -140,7 +140,7 @@ class DataDemoSeeder extends Seeder
         // ----------------------------------------------------
         // 6. Mahasiswa 2
         // ----------------------------------------------------
-        $penggunaMhs2 = Pengguna::create([
+        $penggunaMhs2 = Pengguna::updateOrCreate(['USERNAME' => '220101002'], [
             'USERNAME' => '220101002',
             'PASSWORD' => $kataSandiBersama,
             'NAMALENGKAP' => 'Siti Nurhaliza',
@@ -150,7 +150,7 @@ class DataDemoSeeder extends Seeder
             'STATUSAKUN' => 'AKTIF',
         ]);
 
-        $mhs2 = Mahasiswa::create([
+        $mhs2 = Mahasiswa::updateOrCreate(['NIM' => '220101002'], [
             'IDPENGGUNA' => $penggunaMhs2->IDPENGGUNA,
             'NIM' => '220101002',
             'NAMAMAHASISWA' => 'Siti Nurhaliza',
@@ -162,7 +162,7 @@ class DataDemoSeeder extends Seeder
         // ----------------------------------------------------
         // 7. Mahasiswa 3
         // ----------------------------------------------------
-        $penggunaMhs3 = Pengguna::create([
+        $penggunaMhs3 = Pengguna::updateOrCreate(['USERNAME' => '220101003'], [
             'USERNAME' => '220101003',
             'PASSWORD' => $kataSandiBersama,
             'NAMALENGKAP' => 'Rian Pratama',
@@ -172,7 +172,7 @@ class DataDemoSeeder extends Seeder
             'STATUSAKUN' => 'AKTIF',
         ]);
 
-        $mhs3 = Mahasiswa::create([
+        $mhs3 = Mahasiswa::updateOrCreate(['NIM' => '220101003'], [
             'IDPENGGUNA' => $penggunaMhs3->IDPENGGUNA,
             'NIM' => '220101003',
             'NAMAMAHASISWA' => 'Rian Pratama',
@@ -184,7 +184,7 @@ class DataDemoSeeder extends Seeder
         // ----------------------------------------------------
         // 8. Mahasiswa 4
         // ----------------------------------------------------
-        $penggunaMhs4 = Pengguna::create([
+        $penggunaMhs4 = Pengguna::updateOrCreate(['USERNAME' => '230201004'], [
             'USERNAME' => '230201004',
             'PASSWORD' => $kataSandiBersama,
             'NAMALENGKAP' => 'Dewi Lestari',
@@ -194,7 +194,7 @@ class DataDemoSeeder extends Seeder
             'STATUSAKUN' => 'AKTIF',
         ]);
 
-        $mhs4 = Mahasiswa::create([
+        $mhs4 = Mahasiswa::updateOrCreate(['NIM' => '230201004'], [
             'IDPENGGUNA' => $penggunaMhs4->IDPENGGUNA,
             'NIM' => '230201004',
             'NAMAMAHASISWA' => 'Dewi Lestari',
@@ -206,7 +206,7 @@ class DataDemoSeeder extends Seeder
         // ----------------------------------------------------
         // 9. Mahasiswa 5
         // ----------------------------------------------------
-        $penggunaMhs5 = Pengguna::create([
+        $penggunaMhs5 = Pengguna::updateOrCreate(['USERNAME' => '230201005'], [
             'USERNAME' => '230201005',
             'PASSWORD' => $kataSandiBersama,
             'NAMALENGKAP' => 'Fajar Nugraha',
@@ -216,7 +216,7 @@ class DataDemoSeeder extends Seeder
             'STATUSAKUN' => 'AKTIF',
         ]);
 
-        $mhs5 = Mahasiswa::create([
+        $mhs5 = Mahasiswa::updateOrCreate(['NIM' => '230201005'], [
             'IDPENGGUNA' => $penggunaMhs5->IDPENGGUNA,
             'NIM' => '230201005',
             'NAMAMAHASISWA' => 'Fajar Nugraha',
@@ -228,7 +228,7 @@ class DataDemoSeeder extends Seeder
         // ----------------------------------------------------
         // 10. Jadwal Kuliah (3 Jadwal)
         // ----------------------------------------------------
-        $jadwal1 = Jadwal::create([
+        $jadwal1 = Jadwal::updateOrCreate(['KODEMATAKULIAH' => 'IF301', 'KELAS' => 'IF-A'], [
             'IDDOSEN' => $dosenPimpinan->IDDOSEN,
             'KODEMATAKULIAH' => 'IF301',
             'NAMAMATAKULIAH' => 'Rekayasa Perangkat Lunak',
@@ -245,7 +245,7 @@ class DataDemoSeeder extends Seeder
             'MENITPENGINGAT' => 30,
         ]);
 
-        $jadwal2 = Jadwal::create([
+        $jadwal2 = Jadwal::updateOrCreate(['KODEMATAKULIAH' => 'IF302', 'KELAS' => 'IF-B'], [
             'IDDOSEN' => $dosen2->IDDOSEN,
             'KODEMATAKULIAH' => 'IF302',
             'NAMAMATAKULIAH' => 'Kecerdasan Buatan',
@@ -262,7 +262,7 @@ class DataDemoSeeder extends Seeder
             'MENITPENGINGAT' => 30,
         ]);
 
-        $jadwal3 = Jadwal::create([
+        $jadwal3 = Jadwal::updateOrCreate(['KODEMATAKULIAH' => 'SI201', 'KELAS' => 'SI-A'], [
             'IDDOSEN' => $dosen3->IDDOSEN,
             'KODEMATAKULIAH' => 'SI201',
             'NAMAMATAKULIAH' => 'Basis Data Terdistribusi',
@@ -284,12 +284,12 @@ class DataDemoSeeder extends Seeder
         // ----------------------------------------------------
         // Mahasiswa 1, 2, 3 mengambil Jadwal 1 & 2
         foreach ([$mhs1, $mhs2, $mhs3] as $mhs) {
-            Krs::create([
+            Krs::updateOrCreate([
                 'IDJADWAL' => $jadwal1->IDJADWAL,
                 'IDMAHASISWA' => $mhs->IDMAHASISWA,
             ]);
 
-            Krs::create([
+            Krs::updateOrCreate([
                 'IDJADWAL' => $jadwal2->IDJADWAL,
                 'IDMAHASISWA' => $mhs->IDMAHASISWA,
             ]);
@@ -297,7 +297,7 @@ class DataDemoSeeder extends Seeder
 
         // Mahasiswa 4, 5 mengambil Jadwal 3
         foreach ([$mhs4, $mhs5] as $mhs) {
-            Krs::create([
+            Krs::updateOrCreate([
                 'IDJADWAL' => $jadwal3->IDJADWAL,
                 'IDMAHASISWA' => $mhs->IDMAHASISWA,
             ]);
