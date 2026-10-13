@@ -2,14 +2,19 @@
 
 use App\Http\Controllers\Autentikasi\AutentikasiController;
 use App\Http\Controllers\Baak\DasborController as BaakDasborController;
+use App\Http\Controllers\Baak\SuratController as BaakSuratController;
 use App\Http\Controllers\BotWhatsapp\BotWhatsappController;
 use App\Http\Controllers\Dosen\DasborController as DosenDasborController;
 use App\Http\Controllers\Dosen\PertemuanController;
+use App\Http\Controllers\Dosen\RekapPresensiController;
+use App\Http\Controllers\Dosen\TugasController;
 use App\Http\Controllers\Mahasiswa\DasborController as MahasiswaDasborController;
 use App\Http\Controllers\Mahasiswa\OrmawaDasborController;
 use App\Http\Controllers\Mahasiswa\PengajuanSuratController;
 use App\Http\Controllers\Mahasiswa\PresensiController;
 use App\Http\Controllers\Pimpinan\DasborController as PimpinanDasborController;
+use App\Http\Controllers\Pimpinan\PersetujuanSuratController;
+use App\Http\Controllers\VerifikasiTteController;
 use Illuminate\Support\Facades\Route;
 
 // ==========================================
@@ -61,6 +66,12 @@ Route::post('/presensi/{mahasiswa}/{pertemuan}', [PresensiController::class, 'si
     ->name('mahasiswa.presensi.simpan');
 
 // ==========================================
+// PEMBAHASAN / BAGIAN: Verifikasi Publik Tanda Tangan Elektronik
+// ==========================================
+Route::get('/verifikasi/{token}', [VerifikasiTteController::class, 'tampilkan'])->name('tte.verifikasi');
+Route::get('/verifikasi/{token}/berkas', [VerifikasiTteController::class, 'unduh'])->name('tte.unduh');
+
+// ==========================================
 // PEMBAHASAN / BAGIAN: Rute Dasbor Peran DOSEN
 // ==========================================
 Route::middleware(['auth', 'peran:DOSEN'])->prefix('dosen')->name('dosen.')->group(function () {
@@ -69,6 +80,12 @@ Route::middleware(['auth', 'peran:DOSEN'])->prefix('dosen')->name('dosen.')->gro
     Route::post('/pertemuan/{jadwal}/buka', [PertemuanController::class, 'buka'])->name('pertemuan.buka');
     Route::post('/pertemuan/{pertemuan}/tutup', [PertemuanController::class, 'tutup'])->name('pertemuan.tutup');
     Route::post('/presensi/{presensi}/tinjau', [PertemuanController::class, 'tinjau'])->name('presensi.tinjau');
+    Route::get('/rekap-presensi', [RekapPresensiController::class, 'indeks'])->name('rekap.indeks');
+    Route::get('/presensi/{presensi}/foto', [RekapPresensiController::class, 'foto'])->name('rekap.foto');
+    Route::get('/tugas', [TugasController::class, 'indeks'])->name('tugas.indeks');
+    Route::post('/tugas', [TugasController::class, 'simpan'])->name('tugas.simpan');
+    Route::get('/pengumpulan/{pengumpulan}/unduh', [TugasController::class, 'unduh'])->name('tugas.unduh');
+    Route::post('/pengumpulan/{pengumpulan}/nilai', [TugasController::class, 'nilai'])->name('tugas.nilai');
 });
 
 // ==========================================
@@ -76,6 +93,9 @@ Route::middleware(['auth', 'peran:DOSEN'])->prefix('dosen')->name('dosen.')->gro
 // ==========================================
 Route::middleware(['auth', 'peran:PIMPINAN'])->prefix('pimpinan')->name('pimpinan.')->group(function () {
     Route::get('/dasbor', [PimpinanDasborController::class, 'indeks'])->name('dasbor');
+    Route::get('/surat', [PersetujuanSuratController::class, 'indeks'])->name('surat.indeks');
+    Route::post('/surat/{persetujuan}/setujui', [PersetujuanSuratController::class, 'setujui'])->name('surat.setujui');
+    Route::post('/surat/{persetujuan}/tolak', [PersetujuanSuratController::class, 'tolak'])->name('surat.tolak');
 });
 
 // ==========================================
@@ -83,6 +103,9 @@ Route::middleware(['auth', 'peran:PIMPINAN'])->prefix('pimpinan')->name('pimpina
 // ==========================================
 Route::middleware(['auth', 'peran:BAAK'])->prefix('baak')->name('baak.')->group(function () {
     Route::get('/dasbor', [BaakDasborController::class, 'indeks'])->name('dasbor');
+    Route::get('/surat', [BaakSuratController::class, 'indeks'])->name('surat.indeks');
+    Route::get('/surat/{administrasi}/lampiran', [BaakSuratController::class, 'lampiran'])->name('surat.lampiran');
+    Route::post('/surat/{administrasi}/tinjau', [BaakSuratController::class, 'tinjau'])->name('surat.tinjau');
 });
 
 // ==========================================

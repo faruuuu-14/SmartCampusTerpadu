@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Layanan\TandaTanganElektronik\KunciLayanan;
 use App\Models\Dosen;
 use App\Models\Jadwal;
 use App\Models\Krs;
@@ -57,6 +58,29 @@ class DataDemoSeeder extends Seeder
             'PROGRAMSTUDI' => 'Teknik Informatika',
             'JABATAN' => 'Dekan Fakultas Teknik',
             'LEVELPERSETUJUAN' => 3,
+        ]);
+
+        // ----------------------------------------------------
+        // 2.1 Pimpinan Demo Kedua untuk Persetujuan Berantai
+        // ----------------------------------------------------
+        $penggunaPimpinanKedua = Pengguna::updateOrCreate(['USERNAME' => 'DOSEN004'], [
+            'USERNAME' => 'DOSEN004',
+            'PASSWORD' => $kataSandiBersama,
+            'NAMALENGKAP' => 'Dr. Maya Prameswari, M.Si.',
+            'EMAIL' => 'maya.prameswari@smartcampus.ac.id',
+            'NOMORTELEPON' => '6281234567005',
+            'ADALAHBAAK' => false,
+            'STATUSAKUN' => 'AKTIF',
+        ]);
+
+        Dosen::updateOrCreate(['NIDN' => '0044556604'], [
+            'IDPENGGUNA' => $penggunaPimpinanKedua->IDPENGGUNA,
+            'NIDN' => '0044556604',
+            'NIP' => '197809152005012004',
+            'NAMADOSEN' => 'Dr. Maya Prameswari, M.Si.',
+            'PROGRAMSTUDI' => 'Teknik Informatika',
+            'JABATAN' => 'Wakil Dekan Fakultas Teknik',
+            'LEVELPERSETUJUAN' => 2,
         ]);
 
         // ----------------------------------------------------
@@ -302,5 +326,15 @@ class DataDemoSeeder extends Seeder
                 'IDMAHASISWA' => $mhs->IDMAHASISWA,
             ]);
         }
+
+        // ==========================================
+        // PEMBAHASAN / BAGIAN: Provisioning Kunci untuk Pimpinan Demo
+        // ==========================================
+        $kunciLayanan = app(KunciLayanan::class);
+        Dosen::query()
+            ->whereNotNull('JABATAN')
+            ->with('pengguna')
+            ->get()
+            ->each(fn (Dosen $dosen) => $kunciLayanan->buatJikaBelumAda($dosen->pengguna));
     }
 }

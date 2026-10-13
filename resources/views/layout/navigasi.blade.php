@@ -18,12 +18,16 @@
                         @case('DOSEN')
                             <li class="nav-item"><a class="nav-link" href="{{ route('dosen.dasbor') }}">Dasbor Dosen</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ route('dosen.pertemuan.indeks') }}">Kelola Pertemuan</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('dosen.rekap.indeks') }}">Rekap Presensi</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('dosen.tugas.indeks') }}">Tugas</a></li>
                             @break
                         @case('BAAK')
                             <li class="nav-item"><a class="nav-link" href="{{ route('baak.dasbor') }}">Dasbor BAAK</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('baak.surat.indeks') }}">Verifikasi Surat</a></li>
                             @break
                         @case('PIMPINAN')
                             <li class="nav-item"><a class="nav-link" href="{{ route('pimpinan.dasbor') }}">Dasbor Pimpinan</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('pimpinan.surat.indeks') }}">Persetujuan Surat</a></li>
                             @break
                         @case('ORMAWA')
                             <li class="nav-item"><a class="nav-link" href="{{ route('ormawa.dasbor') }}">Dasbor Ormawa</a></li>
