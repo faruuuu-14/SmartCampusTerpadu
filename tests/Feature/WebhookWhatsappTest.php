@@ -63,6 +63,7 @@ class WebhookWhatsappTest extends TestCase
                 'changes' => [[
                     'value' => [
                         'messages' => [[
+                            'id' => 'wamid-uji-001',
                             'from' => $nomorTelepon,
                             'text' => ['body' => $isiPesan],
                         ]],
@@ -81,6 +82,7 @@ class WebhookWhatsappTest extends TestCase
         Log::shouldReceive('info')->once()->with('Simulasi pengiriman pesan WhatsApp.', [
             'nomor_telepon' => $nomorTelepon,
             'isi_pesan' => "Selamat datang di Bot Smart Campus Terpadu.\n\nPilih layanan berikut:\n1. Jadwal kuliah\n2. Informasi absensi\n\nKetik BATAL untuk membatalkan.",
+            'tombol' => [],
         ]);
 
         $signature = 'sha256='.hash_hmac('sha256', $isiPermintaan, $rahasia);
@@ -101,7 +103,51 @@ class WebhookWhatsappTest extends TestCase
         $response->assertOk();
         $response->assertJsonPath('status', 'ok');
         $response->assertJsonPath('jumlah_pesan_diproses', 1);
+        $response->assertJsonPath('jumlah_duplikat', 0);
         $this->assertSame('MENU', Cache::get('whatsapp:state:'.$nomorTelepon));
+    }
+
+    // ==========================================
+    // PEMBAHASAN / BAGIAN: Mengabaikan IDPESANWA yang Pernah Diproses
+    // ==========================================
+    public function test_webhook_tidak_memproses_id_pesan_yang_sama_dua_kali(): void
+    {
+        $rahasia = 'rahasia-uji';
+        $isiPermintaan = json_encode([
+            'entry' => [[
+                'changes' => [[
+                    'value' => [
+                        'messages' => [[
+                            'id' => 'wamid-uji-duplikat',
+                            'from' => '6281234567892',
+                            'text' => ['body' => 'Halo'],
+                        ]],
+                    ],
+                ]],
+            ]],
+        ], JSON_THROW_ON_ERROR);
+        config([
+            'whatsapp.app_secret' => $rahasia,
+            'whatsapp.mode' => 'log',
+            'cache.default' => 'array',
+        ]);
+        Cache::flush();
+        Log::shouldReceive('channel')->once()->with('single')->andReturnSelf();
+        Log::shouldReceive('info')->once();
+
+        $signature = 'sha256='.hash_hmac('sha256', $isiPermintaan, $rahasia);
+        $konteks = [
+            'HTTP_ACCEPT' => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_HUB_SIGNATURE_256' => $signature,
+        ];
+        $pertama = $this->call('POST', '/webhook/whatsapp', [], [], [], $konteks, $isiPermintaan);
+        $pertama->assertOk()->assertJsonPath('jumlah_pesan_diproses', 1);
+
+        $kedua = $this->call('POST', '/webhook/whatsapp', [], [], [], $konteks, $isiPermintaan);
+        $kedua->assertOk()
+            ->assertJsonPath('jumlah_pesan_diproses', 0)
+            ->assertJsonPath('jumlah_duplikat', 1);
     }
 
     // ==========================================

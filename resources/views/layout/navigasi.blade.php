@@ -38,6 +38,7 @@
 
             <div class="d-flex flex-wrap align-items-center gap-2">
                 @auth
+                    <a class="btn btn-outline-info btn-sm" href="{{ route('whatsapp.ikat') }}">Ikat WhatsApp</a>
                     @if (count(Auth::user()->daftarPeran()) > 1)
                         <a class="btn btn-outline-light btn-sm" href="{{ route('autentikasi.pilihperan') }}">Ganti Peran</a>
                     @endif

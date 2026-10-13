@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers\BotWhatsapp;
 
-use App\BotWhatsapp\MesinFsm;
+use App\BotWhatsapp\LayananBotWhatsapp;
 use App\BotWhatsapp\PengirimPesan;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 
 // ==========================================
 // PEMBAHASAN / BAGIAN: Kontroler Webhook Bot WhatsApp
@@ -40,7 +42,7 @@ class BotWhatsappController extends Controller
     // ==========================================
     // PEMBAHASAN / BAGIAN: Memvalidasi Signature dan Memproses Pesan Masuk
     // ==========================================
-    public function terima(Request $request, MesinFsm $mesin, PengirimPesan $pengirim): JsonResponse
+    public function terima(Request $request, LayananBotWhatsapp $layanan, PengirimPesan $pengirim): JsonResponse
     {
         if (! $this->signatureValid($request)) {
             return response()->json(['pesan' => 'Signature webhook tidak valid.'], 403);
@@ -53,6 +55,7 @@ class BotWhatsappController extends Controller
         }
 
         $jumlahPesanDiproses = 0;
+        $jumlahDuplikat = 0;
 
         foreach ($daftarEntri as $entri) {
             if (! is_array($entri) || ! is_array($entri['changes'] ?? [])) {
@@ -75,21 +78,42 @@ class BotWhatsappController extends Controller
                     }
 
                     $nomorTelepon = (string) ($pesanMasuk['from'] ?? '');
-                    $isiPesan = (string) data_get($pesanMasuk, 'text.body', '');
+                    $idPesan = (string) ($pesanMasuk['id'] ?? '');
+                    $isiPesan = (string) (
+                        data_get($pesanMasuk, 'text.body')
+                        ?? data_get($pesanMasuk, 'button.text')
+                        ?? data_get($pesanMasuk, 'interactive.button_reply.id')
+                        ?? ''
+                    );
+                    $idMedia = data_get($pesanMasuk, 'document.id')
+                        ?? data_get($pesanMasuk, 'image.id');
 
-                    if ($nomorTelepon === '') {
-                        Log::channel('single')->warning('Pesan WhatsApp tanpa nomor pengirim diabaikan.');
+                    if ($nomorTelepon === '' || $idPesan === '') {
+                        return response()->json(['pesan' => 'Nomor atau ID pesan webhook tidak tersedia.'], 422);
+                    }
+
+                    $kunciDuplikat = 'whatsapp:processed:'.hash('sha256', $idPesan);
+                    if (! Cache::add($kunciDuplikat, true, now()->addDay())) {
+                        $jumlahDuplikat++;
 
                         continue;
                     }
 
-                    if ($isiPesan === '') {
-                        $balasan = 'Saat ini bot hanya dapat memproses pesan teks.';
+                    $kunciBatasLaju = 'whatsapp:rate:'.hash('sha256', $nomorTelepon);
+                    if (RateLimiter::tooManyAttempts($kunciBatasLaju, 20)) {
+                        Log::channel('single')->warning('Pesan WhatsApp ditahan karena batas laju nomor tercapai.');
+
+                        continue;
+                    }
+                    RateLimiter::hit($kunciBatasLaju, 60);
+
+                    if ($isiPesan === '' && $idMedia === null) {
+                        $hasil = ['pesan' => 'Saat ini bot hanya dapat memproses pesan teks dan lampiran dokumen tugas.'];
                     } else {
-                        $balasan = $mesin->tangani($nomorTelepon, $isiPesan);
+                        $hasil = $layanan->tangani($nomorTelepon, $isiPesan, is_string($idMedia) ? $idMedia : null);
                     }
 
-                    $pengirim->kirim($nomorTelepon, $balasan);
+                    $pengirim->kirim($nomorTelepon, $hasil['pesan'], $hasil['tombol'] ?? []);
                     $jumlahPesanDiproses++;
                 }
             }
@@ -98,6 +122,7 @@ class BotWhatsappController extends Controller
         return response()->json([
             'status' => 'ok',
             'jumlah_pesan_diproses' => $jumlahPesanDiproses,
+            'jumlah_duplikat' => $jumlahDuplikat,
         ]);
     }
 

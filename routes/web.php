@@ -4,6 +4,7 @@ use App\Http\Controllers\Autentikasi\AutentikasiController;
 use App\Http\Controllers\Baak\DasborController as BaakDasborController;
 use App\Http\Controllers\Baak\SuratController as BaakSuratController;
 use App\Http\Controllers\BotWhatsapp\BotWhatsappController;
+use App\Http\Controllers\BotWhatsapp\IkatAkunController;
 use App\Http\Controllers\Dosen\DasborController as DosenDasborController;
 use App\Http\Controllers\Dosen\PertemuanController;
 use App\Http\Controllers\Dosen\RekapPresensiController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Mahasiswa\PengajuanSuratController;
 use App\Http\Controllers\Mahasiswa\PresensiController;
 use App\Http\Controllers\Pimpinan\DasborController as PimpinanDasborController;
 use App\Http\Controllers\Pimpinan\PersetujuanSuratController;
+use App\Http\Controllers\Publik\VerifikasiController;
 use App\Http\Controllers\VerifikasiTteController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +31,11 @@ Route::get('/', function () {
 // ==========================================
 Route::get('/webhook/whatsapp', [BotWhatsappController::class, 'verifikasi'])->name('whatsapp.verifikasi');
 Route::post('/webhook/whatsapp', [BotWhatsappController::class, 'terima'])->name('whatsapp.terima');
+
+// ==========================================
+// PEMBAHASAN / BAGIAN: Rute Pengikatan Akun WhatsApp
+// ==========================================
+Route::middleware('auth')->get('/whatsapp/ikat', [IkatAkunController::class, 'tampilkan'])->name('whatsapp.ikat');
 
 // ==========================================
 // PEMBAHASAN / BAGIAN: Rute Autentikasi Satu Pintu
@@ -68,7 +75,12 @@ Route::post('/presensi/{mahasiswa}/{pertemuan}', [PresensiController::class, 'si
 // ==========================================
 // PEMBAHASAN / BAGIAN: Verifikasi Publik Tanda Tangan Elektronik
 // ==========================================
-Route::get('/verifikasi/{token}', [VerifikasiTteController::class, 'tampilkan'])->name('tte.verifikasi');
+Route::get('/verifikasi/{token}', [VerifikasiController::class, 'tampilkan'])
+    ->middleware('throttle:30,1')
+    ->name('tte.verifikasi');
+Route::post('/verifikasi/{token}/bandingkan', [VerifikasiController::class, 'bandingkan'])
+    ->middleware('throttle:10,1')
+    ->name('tte.verifikasi.bandingkan');
 Route::get('/verifikasi/{token}/berkas', [VerifikasiTteController::class, 'unduh'])->name('tte.unduh');
 
 // ==========================================
