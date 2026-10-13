@@ -20,10 +20,14 @@ class DasborController extends Controller
         /** @var Pengguna $pengguna */
         $pengguna = Auth::user();
         $dosen = $pengguna->dosen;
+        $jumlahJadwalDiampu = $dosen?->jadwal()->count() ?? 0;
+        $jumlahMahasiswaBimbingan = $dosen?->mahasiswaBimbingan()->count() ?? 0;
 
         return view('dosen.dasbor', [
             'pengguna' => $pengguna,
             'dosen' => $dosen,
+            'jumlahJadwalDiampu' => $jumlahJadwalDiampu,
+            'jumlahMahasiswaBimbingan' => $jumlahMahasiswaBimbingan,
             'peranAktif' => session('PERANAKTIF'),
             'daftarPeran' => $pengguna->daftarPeran(),
         ]);

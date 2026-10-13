@@ -20,10 +20,18 @@ class DasborController extends Controller
         /** @var Pengguna $pengguna */
         $pengguna = Auth::user();
         $dosen = $pengguna->dosen;
+        $jumlahPersetujuanMenunggu = $pengguna->persetujuanSurat()
+            ->where('STATUSPERSETUJUAN', 'MENUNGGU')
+            ->count();
+        $jumlahPersetujuanDisetujui = $pengguna->persetujuanSurat()
+            ->where('STATUSPERSETUJUAN', 'DISETUJUI')
+            ->count();
 
         return view('pimpinan.dasbor', [
             'pengguna' => $pengguna,
             'dosen' => $dosen,
+            'jumlahPersetujuanMenunggu' => $jumlahPersetujuanMenunggu,
+            'jumlahPersetujuanDisetujui' => $jumlahPersetujuanDisetujui,
             'peranAktif' => session('PERANAKTIF'),
             'daftarPeran' => $pengguna->daftarPeran(),
         ]);

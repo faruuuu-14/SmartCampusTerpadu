@@ -1,7 +1,7 @@
 <!-- ========================================== -->
 <!-- PEMBAHASAN / BAGIAN: Halaman Pemilihan Peran Aktif Akun Multi-Role -->
 <!-- ========================================== -->
-@extends('layout.utama')
+@extends('layout.app')
 
 @section('judul', 'Pilih Peran Aktif')
 

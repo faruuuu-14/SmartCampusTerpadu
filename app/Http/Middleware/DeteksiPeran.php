@@ -61,11 +61,13 @@ class DeteksiPeran
 
         // Verifikasi izin peran terhadap rute yang dituju
         if (! empty($peranYangDiizinkan) && ! in_array($peranAktif, $peranYangDiizinkan, true)) {
-            abort(403, sprintf(
-                'Akses Ditolak: Halaman ini memerlukan peran [%s], sedangkan peran aktif Anda adalah [%s].',
-                implode(', ', $peranYangDiizinkan),
-                $peranAktif
-            ));
+            $request->session()->forget('PERANAKTIF');
+
+            if (count($daftarPeran) > 1) {
+                return redirect()->route('autentikasi.pilihperan');
+            }
+
+            return redirect()->route('login');
         }
 
         return $next($request);

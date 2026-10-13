@@ -99,7 +99,8 @@ class AutentikasiTest extends TestCase
 
         // Coba akses dasbor mahasiswa yang bukan hak peran BAAK
         $response = $this->get(route('mahasiswa.dasbor'));
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
+        $response->assertSessionMissing('PERANAKTIF');
     }
 
     // ==========================================

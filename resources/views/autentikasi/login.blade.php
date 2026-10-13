@@ -1,7 +1,7 @@
 <!-- ========================================== -->
 <!-- PEMBAHASAN / BAGIAN: Halaman Masuk Satu Pintu (Login) -->
 <!-- ========================================== -->
-@extends('layout.utama')
+@extends('layout.app')
 
 @section('judul', 'Masuk Satu Pintu')
 
