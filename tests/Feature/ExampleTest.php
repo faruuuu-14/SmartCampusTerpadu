@@ -2,18 +2,20 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+// ==========================================
+// PEMBAHASAN / BAGIAN: Pengujian Dasar Respon Aplikasi
+// ==========================================
 class ExampleTest extends TestCase
 {
-    /**
-     * A basic test example.
-     */
+    // ==========================================
+    // PEMBAHASAN / BAGIAN: Pengujian Akses Root Dialihkan ke Login
+    // ==========================================
     public function test_the_application_returns_a_successful_response(): void
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertRedirect('/login');
     }
 }
