@@ -19,6 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'peran' => DeteksiPeran::class,
         ]);
+
+        // ==========================================
+        // PEMBAHASAN / BAGIAN: Pengecualian CSRF Khusus Webhook WhatsApp
+        // ==========================================
+        $middleware->validateCsrfTokens(except: ['webhook/whatsapp']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
