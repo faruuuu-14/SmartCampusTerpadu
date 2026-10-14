@@ -2,7 +2,10 @@
 
 namespace App\Layanan;
 
+use App\Layanan\Presensi\HasilPenilaianWajah;
+use App\Layanan\Presensi\KeputusanWajah;
 use App\Layanan\Presensi\PenilaiWajah;
+use App\Layanan\Presensi\PenilaiWajahTerperinci;
 use App\Models\Krs;
 use App\Models\Mahasiswa;
 use App\Models\Pertemuan;
@@ -75,14 +78,34 @@ class PresensiLayanan
         $radiusDiizinkan = $mode === 'BEBAS'
             ? $radius * (float) config('presensi.pengali_radius_bebas')
             : $radius;
-        $skorWajah = $this->penilaiWajah->nilai($foto, $mahasiswa);
+        $hasilWajah = $this->penilaiWajah instanceof PenilaiWajahTerperinci
+            ? $this->penilaiWajah->nilaiTerperinci($foto, $mahasiswa)
+            : new HasilPenilaianWajah(
+                $this->penilaiWajah->nilai($foto, $mahasiswa),
+                1,
+                null,
+                0.0,
+            );
+        $skorWajah = $hasilWajah->skor;
 
-        if (! is_finite($skorWajah) || $skorWajah < 0 || $skorWajah > 1) {
-            throw new RuntimeException('Penilai wajah harus mengembalikan skor antara 0 dan 1.');
+        if ($skorWajah !== null && (! is_finite($skorWajah) || $skorWajah < -1 || $skorWajah > 1)) {
+            throw new RuntimeException('Penilai wajah harus mengembalikan skor cosine antara -1 dan 1.');
         }
 
-        $skorRisiko = $this->hitungSkorRisiko($jarak, $radiusDiizinkan, $akurasi, $skorWajah);
-        $status = $this->tentukanStatus($jarak, $radiusDiizinkan, $akurasi, $skorWajah, $skorRisiko);
+        $skorRisiko = $this->hitungSkorRisiko($jarak, $radiusDiizinkan, $akurasi, $skorWajah ?? 0.0);
+        $ambangWajah = config('wajah.ambang');
+        $statusWajah = (new KeputusanWajah)->statusAwal(
+            $hasilWajah,
+            is_numeric($ambangWajah) ? (float) $ambangWajah : null,
+            (string) config('wajah.skor_di_bawah_ambang'),
+        );
+        $status = $statusWajah ?? $this->tentukanStatus(
+            $jarak,
+            $radiusDiizinkan,
+            $akurasi,
+            $skorWajah ?? 0.0,
+            $skorRisiko,
+        );
         $pathFoto = $foto->storeAs('presensi', Str::uuid().'.'.$foto->extension(), 'local');
 
         if ($pathFoto === false) {
@@ -90,7 +113,7 @@ class PresensiLayanan
         }
 
         try {
-            return DB::transaction(function () use ($mahasiswa, $pertemuan, $data, $lintang, $bujur, $akurasi, $jarak, $skorWajah, $skorRisiko, $status, $pathFoto): Presensi {
+            return DB::transaction(function () use ($mahasiswa, $pertemuan, $data, $lintang, $bujur, $akurasi, $jarak, $skorWajah, $hasilWajah, $skorRisiko, $status, $pathFoto): Presensi {
                 $pertemuanTerkunci = Pertemuan::query()
                     ->whereKey($pertemuan->IDPERTEMUAN)
                     ->lockForUpdate()
@@ -117,6 +140,7 @@ class PresensiLayanan
                     'AKURASIGPS' => $akurasi,
                     'JARAKMETER' => $jarak,
                     'SKORWAJAH' => $skorWajah,
+                    'ALASANWAJAH' => $hasilWajah->alasan,
                     'LIVENESSLOLOS' => true,
                     'SKORRISIKO' => $skorRisiko,
                     'STATUSPRESENSI' => $status,

@@ -6,6 +6,7 @@ Proyek skripsi **Sistem Web Portal Multi-Role Terpadu dan Bot WhatsApp** dengan 
 
 - Windows 11 dan Laragon (atau sistem lain yang mendukung PHP).
 - PHP 8.5 dengan ekstensi `openssl`, `sodium`, `gd`, `mbstring`, `fileinfo`, `pdo_mysql`, `curl`, `intl`, dan `zip`.
+- Python 3.14 untuk layanan wajah dan evaluasi.
 - Composer 2.
 - Node.js dan npm.
 - MySQL 8; konfigurasi pengembangan proyek memakai basis data `SMARTCAMPUS`.
@@ -138,6 +139,9 @@ WhatsApp merupakan kanal penghubung untuk perintah cepat; pengelolaan data utama
 | GET | `/presensi/{mahasiswa}/{pertemuan}` | Halaman presensi dengan URL bertanda tangan |
 | GET, POST | `/webhook/whatsapp` | Verifikasi webhook dan penerimaan pesan WhatsApp |
 | GET | `/whatsapp/ikat` | Kode pengikatan WhatsApp (terautentikasi) |
+| GET, POST | `/mahasiswa/wajah` | Persetujuan dan pendaftaran wajah lewat kamera |
+| GET | `/baak/wajah` | Antrian pendaftaran biometrik yang perlu diverifikasi BAAK |
+| POST | `/baak/wajah/{mahasiswa}/verifikasi` | Mengaktifkan atau menolak pendaftaran wajah |
 
 Seluruh rute peran dilindungi autentikasi dan middleware `DeteksiPeran`. Gunakan `php artisan route:list` untuk melihat daftar lengkap beserta nama rute dan middleware.
 
@@ -157,12 +161,47 @@ vendor/bin/pint --dirty --format agent
 
 `tests/Feature/TandaTanganElektronikTest.php` memeriksa TTE sah, perubahan isi surat, muatan, dan tanda tangan, token acak, perbandingan PDF asli/ubah, autentikasi ulang, serta akses akun yang tidak berhak. Tes fitur bot dan pengingat memeriksa kode pengikatan sekali pakai, unggah tugas, deduplikasi pesan, serta antrean pengingat.
 
+## Eksperimen Komparatif Pengenalan Wajah (Sesi 6)
+
+Layanan FastAPI di `layanan_wajah/` hanya mendengarkan pada `127.0.0.1`, memproses foto/embedding di memori, dan mewajibkan `X-KUNCI-LAYANAN`. YuNet dan lima landmark yang sama dipakai sebelum alignment ArcFace 112×112, FaceNet 160×160, dan SFace 112×112. Ikuti [README layanan wajah](./layanan_wajah/README.md) untuk pemasangan, bobot, hash, lisensi, dan keterbatasan Windows.
+
+```powershell
+py -3.14 -m venv layanan_wajah\.venv
+layanan_wajah\.venv\Scripts\python.exe -m pip install -r layanan_wajah\requirements.txt
+layanan_wajah\.venv\Scripts\python.exe -m layanan_wajah.unduh_model
+layanan_wajah\jalankan_layanan_wajah.bat
+```
+
+Atur `WAJAH_KUNCI` pada `.env` (jangan commit); gunakan nilai yang sama pada `.env` layanan Python. Salin bobot ArcFace ResNet-50 yang lisensinya sudah diperiksa ke lokasi `MODEL_ARCFACE`. Perintah kesehatan memeriksa API dan kunci, sedangkan bobot model diuji saat model dipanggil. Jalankan seluruh tes Python dengan:
+
+```powershell
+layanan_wajah\.venv\Scripts\python.exe -m pytest layanan_wajah\tests evaluasi_wajah\tests
+```
+
+Laravel menggunakan `WAJAH_MODE=layanan`, `WAJAH_URL`, `WAJAH_KUNCI`, dan `WAJAH_MODEL`. `WAJAHAMBANG` sengaja kosong secara bawaan: tanpa ambang hasil evaluasi yang ditetapkan, sistem mengarahkan pengenalan wajah ke `PERLUREVIEW` dan tidak membuat keputusan otomatis. Skor di bawah ambang dapat diarahkan ke `PERLUREVIEW` atau `DITOLAK` dengan `WAJAH_SKOR_TIDAK_COCOK`. `WAJAH_MODE=uji` hanya untuk pengembangan, memakai skor tiruan, dan menulis peringatan log. Jalankan `php artisan wajah:uji-koneksi`; atur `WAJAH_RETENSI_HARI` sebelum memakai `php artisan wajah:bersihkan`.
+
+Pendaftaran biometrik meminta persetujuan eksplisit, mengambil foto dari kamera, mengenkripsi embedding, dan menunggu verifikasi BAAK. Presensi otomatis hanya memakai enrollment berstatus `AKTIF`. Catatan presensi disimpan walau foto lama dihapus sesuai retensi. Sebelum mengumpulkan data penelitian, lengkapi [lembar consent](./dokumen/lembar_persetujuan_peserta.md), ikuti [protokol pengumpulan](./dokumen/protokol_pengumpulan_data.md), serta minta izin etik/institusi. Data peserta harus anonim P01/P02, disimpan privat, dan tidak boleh masuk Git.
+
+Struktur data penelitian yang diharapkan ialah `evaluasi_wajah/data_wajah/{P01}/{referensi,terang,redup,sudut,aksesori,jarak}/*.jpg` serta `_serangan/{cetak,layar}/{P01}/*.jpg`. Periksa struktur sebelum evaluasi:
+
+```powershell
+layanan_wajah\.venv\Scripts\python.exe -m evaluasi_wajah.periksa_struktur_data
+```
+
+Jalankan eksperimen data terkumpul setelah layanan dan model tersedia: `layanan_wajah\.venv\Scripts\python.exe -m evaluasi_wajah.jalankan_evaluasi`. Pipeline memisahkan peserta, menentukan ambang hanya pada validasi, dan menyimpan ringkasan/diagram pada `evaluasi_wajah/hasil/` (folder diabaikan Git). Uji alur dan artefak dengan subset publik LFW:
+
+```powershell
+layanan_wajah\.venv\Scripts\python.exe -m evaluasi_wajah.jalankan_evaluasi --demo
+```
+
+Semua keluaran `--demo` berlabel **DEMO, BUKAN DATA PENELITIAN**. Demo LFW memakai proyeksi piksel deterministik untuk menguji pipeline, bukan mengekstrak embedding ArcFace/FaceNet/SFace dan bukan hasil penelitian. Jangan mengutip angka demo sebagai kinerja model. Kerangka artikel tanpa angka rekaan tersedia di [kerangka IMRaD](./dokumen/kerangka_artikel.md).
+
 ## Naskah Demo Sidang (±10 Menit)
 
 1. **Menit 0–1 — Login multi-role:** masuk sebagai `DOSEN001`, tunjukkan pemilihan konteks Pimpinan/Dosen; lalu masuk sebagai mahasiswa.
 2. **Menit 1–2 — Bot WhatsApp:** buka `/whatsapp/ikat`, ikat nomor demo, kirim `jadwal`/`menu`, dan perlihatkan balasan mode log. Jika Cloud API tidak tersedia, gunakan log sebagai rencana cadangan.
 3. **Menit 2–4 — Presensi live:** sebagai dosen buka sesi; sebagai mahasiswa buka tautan presensi melalui HTTPS, izinkan kamera depan dan GPS, lakukan instruksi liveness, lalu kirim. Tunjukkan foto dan posisi pada rekap dosen.
-4. **Menit 4–5 — Uji risiko anti-joki:** lakukan percobaan dari lokasi di luar geofence atau kondisi yang memicu pemeriksaan tambahan. Tunjukkan hasil `PERLUREVIEW` untuk ditinjau dosen atau `DITOLAK` bila risikonya melewati ambang. Penilai wajah bawaan adalah **stub demo**; jangan menyebutnya sebagai deteksi biometrik produksi.
+4. **Menit 4–5 — Uji risiko anti-joki:** pastikan layanan FastAPI dan model enrollment tersedia, lalu lakukan percobaan dari lokasi di luar geofence atau kondisi yang memicu pemeriksaan tambahan. Tunjukkan hasil `PERLUREVIEW` untuk ditinjau dosen atau `DITOLAK` sesuai konfigurasi. Jika memakai `WAJAH_MODE=uji`, skor berasal dari stub pengembangan dan bukan deteksi biometrik.
 5. **Menit 5–6 — Pengajuan surat:** ajukan surat sebagai mahasiswa, tunjukkan status `DIAJUKAN`, lalu periksa lampiran dan checklist sebagai BAAK. Pilih lanjut agar nomor dan isi kanonik surat diterbitkan.
 6. **Menit 6–8 — Persetujuan TTE:** login sebagai `DOSEN004`, ACC dengan kata sandi ulang; lanjutkan sebagai `DOSEN001` dan ACC. Tunjukkan PDF final dengan blok tanda tangan serta QR untuk masing-masing penyetuju.
 7. **Menit 8–9 — Verifikasi publik:** pindai QR dari PDF dengan ponsel/pemindai QR, buka halaman publik, tunjukkan hasil tiap tanda tangan `VALID`, sidik jari, hash isi, dan pemeriksaan SHA-256 PDF.
@@ -172,6 +211,7 @@ vendor/bin/pint --dirty --format agent
 
 - [ ] Siapkan tunnel HTTPS/domain dengan sertifikat aktif; set `APP_URL` ke alamat yang benar.
 - [ ] Pastikan kamera dan GPS browser diizinkan; uji dari perangkat yang akan dipakai.
+- [ ] Jalankan layanan wajah pada loopback, cocokkan kunci API Laravel/Python, dan pastikan bobot model yang dipilih tersedia.
 - [ ] Siapkan akun demo serta kata sandi dan sesi browser terpisah untuk mahasiswa, BAAK, dan dua pimpinan.
 - [ ] Jika mendemonstrasikan Cloud API, siapkan nomor demo, webhook HTTPS, access token aktif, `PHONE_NUMBER_ID`, app secret, dan verify token; jangan tampilkan rahasia di layar.
 - [ ] Pastikan mode WhatsApp `log` siap sebagai cadangan jika jaringan/Cloud API bermasalah.

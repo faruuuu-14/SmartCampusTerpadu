@@ -29,12 +29,17 @@ class Mahasiswa extends Model
         'EMBEDDINGWAJAH',
         'FOTOREFERENSI',
         'TANGGALKONSENBIOMETRIK',
+        'MODELWAJAH',
+        'STATUSWAJAH',
+        'IDVERIFIKASIBIOMETRIK',
+        'WAKTUTINJAUBIOMETRIK',
     ];
 
     protected function casts(): array
     {
         return [
             'TANGGALKONSENBIOMETRIK' => 'datetime',
+            'WAKTUTINJAUBIOMETRIK' => 'datetime',
             'TANGGALBUAT' => 'datetime',
             'TANGGALUBAH' => 'datetime',
         ];

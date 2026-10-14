@@ -6,6 +6,7 @@ use App\Http\Controllers\Baak\JadwalController as BaakJadwalController;
 use App\Http\Controllers\Baak\KrsController as BaakKrsController;
 use App\Http\Controllers\Baak\PenggunaController as BaakPenggunaController;
 use App\Http\Controllers\Baak\SuratController as BaakSuratController;
+use App\Http\Controllers\Baak\VerifikasiWajahController;
 use App\Http\Controllers\BotWhatsapp\BotWhatsappController;
 use App\Http\Controllers\BotWhatsapp\IkatAkunController;
 use App\Http\Controllers\Dosen\DasborController as DosenDasborController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Dosen\RekapPresensiController;
 use App\Http\Controllers\Dosen\TugasController;
 use App\Http\Controllers\Mahasiswa\DasborController as MahasiswaDasborController;
 use App\Http\Controllers\Mahasiswa\OrmawaDasborController;
+use App\Http\Controllers\Mahasiswa\PendaftaranWajahController;
 use App\Http\Controllers\Mahasiswa\PengajuanSuratController;
 use App\Http\Controllers\Mahasiswa\PresensiController;
 use App\Http\Controllers\Mahasiswa\TugasController as MahasiswaTugasController;
@@ -62,6 +64,9 @@ Route::middleware('auth')->group(function () {
 // ==========================================
 Route::middleware(['auth', 'peran:MAHASISWA'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
     Route::get('/dasbor', [MahasiswaDasborController::class, 'indeks'])->name('dasbor');
+    Route::get('/wajah', [PendaftaranWajahController::class, 'indeks'])->name('wajah.indeks');
+    Route::post('/wajah', [PendaftaranWajahController::class, 'daftarkan'])->name('wajah.daftar');
+    Route::post('/wajah/cabut', [PendaftaranWajahController::class, 'cabut'])->name('wajah.cabut');
     Route::get('/pengajuan-surat', [PengajuanSuratController::class, 'indeks'])->name('surat.indeks');
     Route::post('/pengajuan-surat', [PengajuanSuratController::class, 'simpan'])->name('surat.simpan');
     Route::get('/tugas', [MahasiswaTugasController::class, 'indeks'])->name('tugas.indeks');
@@ -129,6 +134,9 @@ Route::middleware(['auth', 'peran:BAAK'])->prefix('baak')->name('baak.')->group(
     Route::resource('/krs', BaakKrsController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['krs' => 'krs']);
+    Route::get('/wajah', [VerifikasiWajahController::class, 'indeks'])->name('wajah.indeks');
+    Route::get('/wajah/{mahasiswa}/foto', [VerifikasiWajahController::class, 'foto'])->name('wajah.foto');
+    Route::post('/wajah/{mahasiswa}/verifikasi', [VerifikasiWajahController::class, 'simpan'])->name('wajah.verifikasi');
     Route::get('/surat', [BaakSuratController::class, 'indeks'])->name('surat.indeks');
     Route::get('/surat/{administrasi}/lampiran', [BaakSuratController::class, 'lampiran'])->name('surat.lampiran');
     Route::post('/surat/{administrasi}/tinjau', [BaakSuratController::class, 'tinjau'])->name('surat.tinjau');

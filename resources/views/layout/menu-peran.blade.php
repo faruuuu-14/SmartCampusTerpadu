@@ -8,6 +8,7 @@
         <a class="menu-tautan {{ request()->routeIs('mahasiswa.dasbor') ? 'aktif' : '' }}" href="{{ route('mahasiswa.dasbor') }}"><span class="menu-ikon">⌂</span>Dasbor</a>
         <a class="menu-tautan {{ request()->routeIs('mahasiswa.tugas.*') ? 'aktif' : '' }}" href="{{ route('mahasiswa.tugas.indeks') }}"><span class="menu-ikon">▣</span>Kelas &amp; Tugas</a>
         <a class="menu-tautan {{ request()->routeIs('mahasiswa.surat.*') ? 'aktif' : '' }}" href="{{ route('mahasiswa.surat.indeks') }}"><span class="menu-ikon">▤</span>Surat &amp; Administrasi</a>
+        <a class="menu-tautan {{ request()->routeIs('mahasiswa.wajah.*') ? 'aktif' : '' }}" href="{{ route('mahasiswa.wajah.indeks') }}"><span class="menu-ikon">◉</span>Persetujuan Biometrik</a>
         <a class="menu-tautan" href="{{ route('whatsapp.ikat') }}"><span class="menu-ikon">↗</span>Sambungkan WhatsApp</a>
     @elseif ($peranAktif === 'DOSEN')
         <a class="menu-tautan {{ request()->routeIs('dosen.dasbor') ? 'aktif' : '' }}" href="{{ route('dosen.dasbor') }}"><span class="menu-ikon">⌂</span>Dasbor</a>
@@ -21,6 +22,7 @@
         <a class="menu-tautan {{ request()->routeIs('baak.jadwal.*') ? 'aktif' : '' }}" href="{{ route('baak.jadwal.index') }}"><span class="menu-ikon">◷</span>Jadwal Kuliah</a>
         <a class="menu-tautan {{ request()->routeIs('baak.krs.*') ? 'aktif' : '' }}" href="{{ route('baak.krs.index') }}"><span class="menu-ikon">▦</span>Kelola KRS</a>
         <a class="menu-tautan {{ request()->routeIs('baak.surat.*') ? 'aktif' : '' }}" href="{{ route('baak.surat.indeks') }}"><span class="menu-ikon">▤</span>Verifikasi Surat</a>
+        <a class="menu-tautan {{ request()->routeIs('baak.wajah.*') ? 'aktif' : '' }}" href="{{ route('baak.wajah.indeks') }}"><span class="menu-ikon">◉</span>Verifikasi Biometrik</a>
     @elseif ($peranAktif === 'PIMPINAN')
         <a class="menu-tautan {{ request()->routeIs('pimpinan.dasbor') ? 'aktif' : '' }}" href="{{ route('pimpinan.dasbor') }}"><span class="menu-ikon">⌂</span>Dasbor</a>
         <a class="menu-tautan {{ request()->routeIs('pimpinan.surat.*') ? 'aktif' : '' }}" href="{{ route('pimpinan.surat.indeks') }}"><span class="menu-ikon">▤</span>Persetujuan Surat</a>

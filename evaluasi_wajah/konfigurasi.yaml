@@ -1,0 +1,25 @@
+# ==========================================
+# PEMBAHASAN / BAGIAN: Protokol Eksperimen Wajah yang Dapat Diulang
+# ==========================================
+jalur_data: evaluasi_wajah/data_wajah
+jalur_hasil: evaluasi_wajah/hasil
+url_layanan: http://127.0.0.1:8765
+model:
+  - ArcFace
+  - FaceNet
+  - SFace
+seed_acak: 20261014
+rasio_validasi: 0.4
+bootstrap_ulangan: 1000
+latensi_ulangan: 50
+pemanasan_latensi: 5
+target_impostor_minimum: 3
+jumlah_peserta_minimum: 8
+foto_minimum:
+  referensi: 5
+  terang: 3
+  redup: 3
+  sudut: 3
+  aksesori: 3
+  jarak: 3
+foto_serangan_minimum: 3

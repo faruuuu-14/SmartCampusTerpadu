@@ -28,6 +28,7 @@ class Presensi extends Model
         'AKURASIGPS',
         'JARAKMETER',
         'SKORWAJAH',
+        'ALASANWAJAH',
         'SKORLINGKUNGAN',
         'LIVENESSLOLOS',
         'SKORRISIKO',

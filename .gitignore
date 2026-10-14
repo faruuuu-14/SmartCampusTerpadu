@@ -21,7 +21,27 @@
 /storage/*.key
 /storage/pail
 /vendor
+/.venv/
 _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# ==========================================
+# PEMBAHASAN / BAGIAN: Perlindungan Data Biometrik dan Lingkungan Python
+# ==========================================
+/layanan_wajah/.venv/
+/layanan_wajah/model/
+/layanan_wajah/models/
+/layanan_wajah/.pytest_cache/
+/layanan_wajah/**/__pycache__/
+/evaluasi_wajah/data_wajah/
+/evaluasi_wajah/hasil/
+/evaluasi_wajah/.venv/
+/evaluasi_wajah/.pytest_cache/
+/evaluasi_wajah/**/__pycache__/
+*.embedding
+*.onnx
+*.onnx.*
+*.pt
+*.pth

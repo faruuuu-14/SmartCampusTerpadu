@@ -369,3 +369,19 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (11,'2026_01_01_000
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (12,'2026_01_01_000012_create_persetujuansurat_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (13,'2026_10_14_013616_create_riwayattindakansurat_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (14,'2026_10_14_021800_create_antrianpengingat_table',1);
+-- ==========================================
+-- PEMBAHASAN / BAGIAN: Kolom Pendaftaran Wajah dan Peninjauan Manual Presensi
+-- ==========================================
+ALTER TABLE `mahasiswa`
+  ADD `MODELWAJAH` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  ADD `STATUSWAJAH` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'BELUM',
+  ADD `IDVERIFIKASIBIOMETRIK` bigint unsigned DEFAULT NULL,
+  ADD `WAKTUTINJAUBIOMETRIK` datetime DEFAULT NULL,
+  ADD CONSTRAINT `mahasiswa_idverifikasibiometrik_foreign`
+    FOREIGN KEY (`IDVERIFIKASIBIOMETRIK`) REFERENCES `pengguna` (`IDPENGGUNA`) ON DELETE SET NULL;
+
+ALTER TABLE `presensi`
+  ADD `ALASANWAJAH` varchar(60) COLLATE utf8mb4_unicode_ci DEFAULT NULL;
+
+INSERT INTO `migrations` (`id`, `migration`, `batch`)
+VALUES (15,'2026_10_14_114548_add_modelwajah_and_status_to_mahasiswa_table',1);

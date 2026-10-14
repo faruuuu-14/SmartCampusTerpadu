@@ -24,6 +24,22 @@ class PresensiCerdasTest extends TestCase
     use DatabaseTransactions;
 
     // ==========================================
+    // PEMBAHASAN / BAGIAN: Mengaktifkan Penilai Tiruan Khusus Pengujian Presensi
+    // ==========================================
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config([
+            'wajah.mode' => 'uji',
+            'wajah.ambang' => 0.85,
+            'presensi.ambang_wajah_hadir' => 0.85,
+            'presensi.ambang_wajah_tolak' => 0.85,
+            'presensi.penilai_wajah.skor_tiruan' => 0.93,
+        ]);
+    }
+
+    // ==========================================
     // PEMBAHASAN / BAGIAN: Pengelolaan Sesi Dosen dan Pembuatan Tautan
     // ==========================================
     public function test_dosen_dapat_membuka_melihat_tautan_dan_menutup_sesi(): void
